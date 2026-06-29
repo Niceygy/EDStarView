@@ -1,67 +1,40 @@
 import * as THREE from "three";
-import { Star, debugDot } from "./star";
-import { isDebugMode, skyDomeGroup, app, isGPSAllowed } from "./constants";
-import { createStarImage } from "./canvas";
+import { App } from "locar";
 
-function loadSystems(): Star[] {
-  return [new Star("Sagittarius A*", [25.21, -20.9, 25899.68]), new Star("Colonia", [-953.12, -910.28, 19808.12])];
+const app = new App({
+  cameraOptions: { hFov: 80, near: 0.001, far: 1000 },
+});
+
+let fakeGPSCoords: number[] = [];
+
+function createBox(): THREE.Mesh {
+  const geom = new THREE.BoxGeometry(10, 10, 10);
+  var image = document.createElement("img");
+  image.src = "assets/orbis.png";
+  const material = new THREE.MeshBasicMaterial({ color: 0xff0000, map: new THREE.Texture(image) });
+  const mesh = new THREE.Mesh(geom, material);
+  return mesh;
 }
 
-try {
-  const LocalAR = await app.start();
-  const systems = loadSystems();
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    async (pos: GeolocationPosition) => {
+      fakeGPSCoords = [pos.coords.longitude, pos.coords.latitude];
+      alert(fakeGPSCoords);
+      try {
+        const locar = await app.start();
+        locar.fakeGps(fakeGPSCoords[0], fakeGPSCoords[1]);
 
-  // Protect the skyDomeGroup by nesting it onto the camera hierarchy
-  app.camera.add(skyDomeGroup);
-  app.scene.add(app.camera);
-
-  if (isDebugMode) app.camera.add(debugDot());
-
-  // Loop over every system coordinate set
-  for (const sys of systems) {
-    if (sys.rawCoords[0] === 0 && sys.rawCoords[1] === 0 && sys.rawCoords[2] === 0) continue; // Skip bad setups
-
-    // 1. Build an un-attached canvas asset for this specific star
-    const starCanvas = createStarImage(sys);
-
-    // 2. Map the isolated transparent asset to the WebGL texture frame pipeline
-    const canvasTexture = new THREE.CanvasTexture(starCanvas);
-    const spriteMaterial = new THREE.SpriteMaterial({
-      map: canvasTexture,
-      transparent: true, // Tells Three.js to render alpha transparency holes
-    });
-
-    // 3. Initialize a 2D Sprite plane so the canvas image always looks flatly at you
-    const starSprite = new THREE.Sprite(spriteMaterial);
-    starSprite.scale.set(40, 40, 1); // Set size scaling dimensions
-    starSprite.position.copy(sys.positionToRenderAt); // Copy over mapped coordinates
-
-    // Append the sprite safely onto our responsive gyro layer group
-    skyDomeGroup.add(starSprite);
-  }
-
-  // Freeze the camera transform attributes to allow our custom math matrix to dictate position
-  app.camera.position.set(0, 0, 0);
-  app.camera.static = true;
-
-  LocalAR.on("gpserror", (error: GeolocationPositionError) => {
-    console.error(`GPS Error: ${error.code}`);
-  });
-
-  // 4. CRUCIAL STEP: Fire up LocAR's GPS video camera capture process immediately
-  LocalAR.startGps();
-
-  // 5. Handle fallback orientation or mock positioning parameters safely afterward
-  if (isGPSAllowed) {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos: GeolocationPosition) => {
-        LocalAR.fakeGps(pos.coords.longitude, pos.coords.latitude, pos.coords.accuracy);
-      });
-    }
-  } else {
-    LocalAR.fakeGps(0, 0); // Safe to invoke mock variables now that the stream pipeline has explicitly loaded
-  }
-} catch (e: any) {
-  console.log(e);
-  alert(e);
+        locar.add(createBox(), fakeGPSCoords[0], fakeGPSCoords[1] - 0.0005);
+        locar.add(createBox(), fakeGPSCoords[0], fakeGPSCoords[1] + 0.0005);
+        locar.add(createBox(), fakeGPSCoords[0] - 0.0005, fakeGPSCoords[1]);
+        locar.add(createBox(), fakeGPSCoords[0] + 0.0005, fakeGPSCoords[1]);
+      } catch (e: any) {
+        alert(`Error: ${e.code} ${e.message}`);
+      }
+    },
+    (e: GeolocationPositionError) => {
+      alert(e);
+    },
+  );
 }

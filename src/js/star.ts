@@ -18,14 +18,9 @@ export class Star {
   }
 }
 
-export function debugDot(): THREE.Mesh {
-  //DEBUG DOT
-  const dotGeometry = new THREE.SphereGeometry(2, 16, 16);
-  const dotMaterial = new THREE.MeshBasicMaterial({
-    color: 0xff00ff,
-    wireframe: false,
-  });
-  const debugDot = new THREE.Mesh(dotGeometry, dotMaterial);
-  debugDot.position.set(0, 0);
-  return debugDot;
-}
+export const tempStarCatalog = [
+  { name: "Sagittarius A*", x: 25.22, y: -20.91, z: 25900.0, color: 0xffb86c },
+  { name: "Lave", x: 75.75, y: 48.75, z: 70.75, color: 0x50fa7b },
+  { name: "Colonia", x: -9530.5, y: -910.28, z: 19808.12, color: 0x8be9fd },
+  { name: "Beagle Point", x: -1111.56, y: -134.22, z: 65269.75, color: 0xff5555 },
+];

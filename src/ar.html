@@ -2,20 +2,20 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
     <title>StarView</title>
-    <link rel="stylesheet" type="text/css" href="./css/style.css" />
-    <script type="module" src="./js/main.ts"></script>
+    <script type="module" src="js/main.ts"></script>
   </head>
   <body>
-    <main>
-      <div id="gpsinput">
-        <div><input id="fakeLat" placeholder="Fake Lat" /></div>
-        <div><input id="fakeLon" placeholder="Fake Lon" /></div>
-        <div><button id="setFakeLoc">Set Fake Location!</button></div>
-      </div>
-
-      <canvas id="glscene"></canvas>
-      <canvas id="hidden-canvas" hidden="true"></canvas>
-    </main>
+    <div id="sysinput">
+      <p style="color: white; background-color: black">Enter system:</p>
+      <input type="text" />
+    </div>
   </body>
 </html>
