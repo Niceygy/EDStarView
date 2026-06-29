@@ -1,20 +1,58 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1" />
-    <title>StarView</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="./css/style.css" />
-    <script type="module" src="./js/main.ts"></script>
+    <title>StarView</title>
   </head>
   <body>
-    <main>
-      <div id="gpsinput">
-        <div><input id="fakeLat" placeholder="Fake Lat" /></div>
-        <div><input id="fakeLon" placeholder="Fake Lon" /></div>
-        <div><button id="setFakeLoc">Set Fake Location!</button></div>
-      </div>
+    <script>
+      function onsubmit() {
+        let redirectURL = (window.location.host = "/view?");
+        let captial = document.getElementById("captial-name").value;
+        document.getElementById("captial-cities-coords").forEach((v, i) => {
+          if (v.toString().includes(capital)) {
+            redirectURL += `capital-data=${v}&`;
+          }
+        });
+        redirectURL += `allow-gps=${document.getElementById("allowGPS").value}`;
+      }
 
-      <canvas id="glscene"></canvas>
-    </main>
+      function populateCapitals() {
+        let suggestions = document.getElementById("captial-cities");
+        let coords = document.getElementById("captial-cities-coords");
+        fetch(window.location.hostname + "/assets/capitals.csv")
+          .then((v) => v.text)
+          .then((v) => {
+            v.toString()
+              .split("\n")
+              .forEach((value, i) => {
+                let valueParts = value.split(",");
+                let country = valueParts[2];
+                let capital = valueParts[3];
+                var option = document.createElement("option");
+                option.value = `${capital} (${country})`;
+                suggestions.append(option);
+
+                var coordOption = document.createElement("option");
+                //lat / lon
+                coordOption.value = `${capital}/${country}/${valueParts[4]}/${valueParts[5]}`;
+                coords.append(coordOption);
+              });
+          });
+      }
+    </script>
+    <h1>StarView</h1>
+    <datalist id="capital-cities"> </datalist>
+    <datalist id="capital-cities-coords"> </datalist>
+
+    <form onsubmit="onsubmit()">
+      <p>Allow GPS?</p>
+      <input type="checkbox" name="allowGPS" />
+      <p>Or use a capital near you</p>
+      <input type="text" list="capital-cities" name="captial-name" />
+      <input type="hidden" name="capital-coords" />
+    </form>
   </body>
 </html>

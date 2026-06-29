@@ -12,6 +12,10 @@ export function setNorth(n: number) {
 
 export const skyDomeGroup = new THREE.Group();
 
+export const HiddenCanvas = document.getElementById("hidden-canvas");
+
+export const isGPSAllowed = window.location.href.includes("nogps");
+
 export const app = new App({
   cameraOptions: { hFov: 80, near: 0.001, far: 1000 },
   canvas: document.getElementById("glscene") as HTMLCanvasElement,

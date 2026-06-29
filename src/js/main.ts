@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 import { Star, debugDot } from "./star";
-import { isDebugMode, skyDomeGroup, app } from "./constants";
+import { isDebugMode, skyDomeGroup, app, isGPSAllowed } from "./constants";
 
 function loadSystems(): Star[] {
   return [new Star("Sagittarius A*", [25.21, -20.9, 25899.68]), new Star("Colonia", [-953.12, -910.28, 19808.12])];
@@ -44,11 +44,12 @@ try {
     console.error(`GPS Error: ${error.code}`);
   });
 
-  //   LocalAR.startGps();
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos: GeolocationPosition) => {
-      LocalAR.fakeGps(pos.coords.longitude, pos.coords.latitude, pos.coords.accuracy);
-    });
+  if (isGPSAllowed) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos: GeolocationPosition) => {
+        LocalAR.fakeGps(pos.coords.longitude, pos.coords.latitude, pos.coords.accuracy);
+      });
+    }
   }
 } catch (e: any) {
   console.log(e);
