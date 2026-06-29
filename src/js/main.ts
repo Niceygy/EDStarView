@@ -1,7 +1,8 @@
 import * as THREE from "three";
 
 import { Star, debugDot } from "./star";
-import { isDebugMode, skyDomeGroup, app, isGPSAllowed } from "./constants";
+import { isDebugMode, skyDomeGroup, app, isGPSAllowed, HiddenCanvas } from "./constants";
+import { createStarImage } from "./canvas";
 
 function loadSystems(): Star[] {
   return [new Star("Sagittarius A*", [25.21, -20.9, 25899.68]), new Star("Colonia", [-953.12, -910.28, 19808.12])];
@@ -9,7 +10,6 @@ function loadSystems(): Star[] {
 
 try {
   const LocalAR = await app.start();
-  const nativeScene = app.scene;
   const systems = loadSystems();
 
   app.camera.add(skyDomeGroup);
@@ -24,16 +24,25 @@ try {
     if (sys.rawCoords[0] === 0 && sys.rawCoords[1] === 0 && sys.rawCoords[2] === 0) continue;
     //^ignore broken ones and sol
 
-    const meshMaterial = new THREE.MeshBasicMaterial({
-      color: sys.colour,
-      visible: true,
-      wireframe: false,
+    // const meshMaterial = new THREE.MeshBasicMaterial({
+    //   color: sys.colour,
+    //   visible: true,
+    //   wireframe: false,
+    // });
+    // const mesh = new THREE.Mesh(geometry, meshMaterial);
+    // mesh.position.copy(sys.positionToRenderAt);
+    createStarImage(sys);
+    const canvasTexture = new THREE.CanvasTexture(HiddenCanvas);
+    const spriteMaterial = new THREE.SpriteMaterial({
+      map: canvasTexture,
+      transparent: true,
     });
-    const mesh = new THREE.Mesh(geometry, meshMaterial);
-    mesh.position.copy(sys.positionToRenderAt);
+    const starSprite = new THREE.Sprite(spriteMaterial);
+    starSprite.scale.set(40, 40, 1);
+    starSprite.position.copy(sys.positionToRenderAt);
 
     // nativeScene.add(mesh);
-    skyDomeGroup.add(mesh);
+    skyDomeGroup.add(starSprite);
   }
 
   //disable auto camera things
@@ -50,6 +59,8 @@ try {
         LocalAR.fakeGps(pos.coords.longitude, pos.coords.latitude, pos.coords.accuracy);
       });
     }
+  } else {
+    LocalAR.fakeGps(0, 0);
   }
 } catch (e: any) {
   console.log(e);

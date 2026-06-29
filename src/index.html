@@ -7,52 +7,83 @@
     <title>StarView</title>
   </head>
   <body>
+    <datalist id="capital-cities" name="capital-cities"> </datalist>
     <script>
-      function onsubmit() {
-        let redirectURL = (window.location.host = "/view?");
+      function submitForm() {
+        let redirectURL = /*window.location.host + */ "ar.html?";
         let captial = document.getElementById("captial-name").value;
-        document.getElementById("captial-cities-coords").forEach((v, i) => {
-          if (v.toString().includes(capital)) {
-            redirectURL += `capital-data=${v}&`;
-          }
-        });
-        redirectURL += `allow-gps=${document.getElementById("allowGPS").value}`;
+        redirectURL += `capital=${captial}&`;
+
+        //GPS?
+        let gps = false;
+        navigator.geolocation.getCurrentPosition(
+          (_) => {
+            gps = true;
+          },
+          (_) => {
+            gps = false;
+          },
+        );
+
+        redirectURL += `allow-gps=${gps}`;
+        console.log(redirectURL);
+        window.location.href += redirectURL;
       }
 
       function populateCapitals() {
-        let suggestions = document.getElementById("captial-cities");
-        let coords = document.getElementById("captial-cities-coords");
-        fetch(window.location.hostname + "/assets/capitals.csv")
-          .then((v) => v.text)
+        let suggestions = document.getElementById("capital-cities");
+        fetch(window.location.href + "assets/capitals.csv")
+          .then((v) => v.text())
           .then((v) => {
             v.toString()
               .split("\n")
               .forEach((value, i) => {
+                // console.log(value);
                 let valueParts = value.split(",");
                 let country = valueParts[2];
                 let capital = valueParts[3];
                 var option = document.createElement("option");
                 option.value = `${capital} (${country})`;
                 suggestions.append(option);
-
-                var coordOption = document.createElement("option");
-                //lat / lon
-                coordOption.value = `${capital}/${country}/${valueParts[4]}/${valueParts[5]}`;
-                coords.append(coordOption);
               });
           });
       }
+
+      function requestPermissions() {
+        navigator.geolocation.getCurrentPosition((_) => {});
+
+        navigator.mediaDevices.getUserMedia({ video: true });
+
+        document.getElementById("go-btn").disabled = false;
+        document.getElementById("perms-btn").disabled = true;
+        document.getElementById("perms-txt").innerText = "Permissions registered";
+      }
+
+      populateCapitals();
     </script>
     <h1>StarView</h1>
-    <datalist id="capital-cities"> </datalist>
-    <datalist id="capital-cities-coords"> </datalist>
 
-    <form onsubmit="onsubmit()">
-      <p>Allow GPS?</p>
-      <input type="checkbox" name="allowGPS" />
-      <p>Or use a capital near you</p>
-      <input type="text" list="capital-cities" name="captial-name" />
-      <input type="hidden" name="capital-coords" />
-    </form>
+    <p>Before we start, this page needs a few permissions from your browser.</p>
+    <p>GPS is used to correct where the stars are painted based on your rough location. (e.g someone in australia would see a different sky to a brit)</p>
+    <p><i>Or you can select a capital city nearby</i></p>
+    <p>Camera is used for the augmented reality bit</p>
+    <p><strong>No data leaves your device!</strong></p>
+
+    <!-- <form> -->
+    <h3>Input</h3>
+    <br />
+    <p>Use a capital near you instead of gps:</p>
+    <input type="text" list="capital-cities" id="captial-name" />
+    <i><- Populate this if you deny location</i>
+    <br />
+    <br />
+
+    <button onclick="requestPermissions()" id="perms-btn">Request browser permissions</button>
+    <p id="perms-txt"></p>
+    <br />
+    <br />
+
+    <button onclick="submitForm()" disabled="true" id="go-btn">Go!</button>
+    <!-- </form> -->
   </body>
 </html>

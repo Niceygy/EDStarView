@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "EUROCAPS";
+  src: url("./EUROCAPS.TTF");
+}
+
 html,
 body {
   width: 100%;
@@ -5,11 +10,6 @@ body {
   background-color: #000;
   color: rgb(230, 129, 14);
   font-family: "EUROCAPS", Arial, sans-serif;
-}
-
-@font-face {
-  font-family: "EUROCAPS";
-  src: url("fonts/EUROCAPS.TTF");
 }
 
 #gpsinput > div {
