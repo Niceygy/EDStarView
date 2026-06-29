@@ -1,13 +1,24 @@
 import { Star } from "./star";
 import { HiddenCanvas } from "./constants";
 
-export function createStarImage(s: Star): string {
-  const ctx: CanvasRenderingContext2D = HiddenCanvas.getContext("2d")!;
-  ctx.fillStyle = "red";
-  ctx.fillRect(0, 0, 150, 75);
+export function createStarImage(s: Star): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d")!;
 
-  //   //https://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
-  //   var image = HiddenCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+  // 1. Ensure absolute alpha transparency for the background
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  return "image";
+  // 2. Draw your red system indicator square (centered)
+  ctx.fillStyle = s.colour;
+  ctx.fillRect(64, 64, 128, 128);
+
+  // 3. Render the system text safely below the block
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 22px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(s.systemName, 128, 230);
+
+  return canvas;
 }
